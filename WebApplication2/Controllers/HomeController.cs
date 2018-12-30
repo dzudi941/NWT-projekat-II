@@ -8,23 +8,16 @@ namespace WebApplication2.Controllers
 {
     public class HomeController : Controller
     {
-        public ActionResult Index()
+        [HttpGet]
+        public ActionResult jQuery()
         {
-            return View();
-        }
-
-        public ActionResult About()
-        {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
+            var fileContents = System.Web.HttpContext.Current.Request.MapPath("~/Views/WebApiClient/index.html");
+            //var response = new HttpResponseMessage();
+            //response.Content = new StringContent(fileContents);
+            //response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/html");
+            //return response;
+            //return Content(fileContents);
+            return File(Server.MapPath("/Views/WebApiClient/") + "index.html", "text/html");
         }
     }
 }

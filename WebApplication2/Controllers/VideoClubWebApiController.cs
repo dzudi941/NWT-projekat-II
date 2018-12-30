@@ -21,7 +21,7 @@ namespace WebApplication2.Controllers
         // GET api/values
         public string Get()
         {
-            using (var videoClubContext = new VideoClub())
+            using (var videoClubContext = new VideoClubContext())
             {
                 List<Movie> movies = videoClubContext.Movies.Include(m => m.Genres).ToList();
                 var moviesJson = JsonConvert.SerializeObject(movies);
@@ -54,7 +54,7 @@ namespace WebApplication2.Controllers
         [System.Web.Http.HttpGet]
         public object GetMovieData()
         {
-            using (var videoClubContext = new VideoClub())
+            using (var videoClubContext = new VideoClubContext())
             {
                 return new
                 {
@@ -69,7 +69,7 @@ namespace WebApplication2.Controllers
         [System.Web.Http.HttpPost]
         public string CreateMovie(JObject jsonObject)
         {
-            using (var videoClubContext = new VideoClub())
+            using (var videoClubContext = new VideoClubContext())
             {
                 Movie movie = new Movie();
                 movie.Year = DateTime.Parse(jsonObject["Movie.Year"].ToString());
@@ -99,7 +99,7 @@ namespace WebApplication2.Controllers
         [System.Web.Http.HttpGet]
         public string GetMovieById(int id)
         {
-            using (var videoClubContext = new VideoClub())
+            using (var videoClubContext = new VideoClubContext())
             {
                 Movie movie = videoClubContext.Movies.FirstOrDefault(m=>m.MovieId == id);
                 var movieJson = JsonConvert.SerializeObject(movie);
@@ -111,7 +111,7 @@ namespace WebApplication2.Controllers
         [System.Web.Http.HttpPost]
         public string EditMovie(JObject jsonObject)
         {
-            using (var videoClubContext = new VideoClub())
+            using (var videoClubContext = new VideoClubContext())
             {
                 int movieId = int.Parse(jsonObject["MovieId"].ToString());
                 Movie movie = videoClubContext.Movies.First(m => m.MovieId == movieId);

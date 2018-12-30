@@ -84,3 +84,5 @@ WebApplication2/Web.config
 WebApplication2/Web.Debug.config
 WebApplication2/Web.Release.config
 WebApplication2/WebApplication2.csproj
+WebApplication2/App_Data/VideoClubDatabase.mdf
+WebApplication2/App_Data/VideoClubDatabase_log.ldf
