@@ -1,0 +1,51 @@
+﻿@model IEnumerable<WebApplication2.Models.Actor>
+
+@{
+    ViewBag.Title = "Actors";
+}
+
+<h2>Actors</h2>
+
+<p>
+    @Html.ActionLink("Create New", "CreateActor")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.FullName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BirthDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Biography)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Country)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.FullName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BirthDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Biography)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Country.Name)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "EditActor", new { id=item.ActorId }) |
+            @Html.ActionLink("Details", "DetailsActor", new { id=item.ActorId }) |
+            @Html.ActionLink("Delete", "DeleteActor", new { id=item.ActorId })
+        </td>
+    </tr>
+}
+
+</table>

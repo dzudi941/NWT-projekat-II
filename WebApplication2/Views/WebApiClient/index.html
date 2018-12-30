@@ -1,0 +1,367 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+            crossorigin="anonymous"></script>
+
+    <!--<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
+    
+</head>
+<body>
+<nav class="nav">
+  <a class="nav-link active" href="#">Active</a>
+  <a class="nav-link" href="#">Link</a>
+  <a class="nav-link" href="#">Link</a>
+  <a class="nav-link disabled" href="#">Disabled</a>
+</nav>
+
+<div class="container">
+    <div class="col-md-12">
+        <div id="videClubContent" class="table">
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
+    
+    $(document).ready(function () {
+        $.get(appUrl, function (movies) {
+            console.log(JSON.parse(movies));
+            ListAllMoviesView(JSON.parse(movies));
+        });
+    });
+
+    function ListAllMoviesView(movies)
+    {
+        var tableContent = "<button onclick=\"CreateMovieView()\">CreateNew</button><table  class=\"table\"><tr><th>Title</th><th>Director</th><th>Year</th><th>Count</th><th>Genres</th><th></th></tr>";
+        var localMovies;
+        
+        localMovies = movies;
+        movies.forEach(function (movie) {
+            var localGenres = "";
+            console.log(movie.Genres.$values);
+            movie.Genres.forEach(function (genre, index, genres) {
+                var comma = ", ";
+                if (index == genres.length - 1)
+                    comma = "";
+                localGenres += genre.Title + comma
+            });
+
+            tableContent +=
+                "<tr>\
+                    <td>\
+                        "+ movie.Title + "\
+                    </td>\
+                    <td>\
+                        "+ movie.Director + "\
+                    </td>\
+                    <td>\
+                        "+ movie.Year + "\
+                    </td>\
+                    <td>\
+                        "+ movie.Count + "\
+                    </td>\
+                    <td>\
+                        "+ localGenres + "\
+                    </td>\
+                    <td>\
+                        <a href='#' onclick='return EditMovieView("+ movie.MovieId +")'>Edit</a> | \
+                        <a href='#' onclick='return DeleteMovieView("+ movie.MovieId +")'>Delete</a>\
+                    </td>\
+                </tr>";
+        });
+
+        $("#videClubContent").html(tableContent);
+    }
+
+    function CreateMovieView()
+    {
+        var movieDataUrl = appUrl + "GetMovieData/";
+        $.get(movieDataUrl, function(movieData){
+            var countries = "";
+            var genres ="";
+            var actors ="";
+
+            movieData.Countries.$values.forEach(function(country){
+                countries += "<option value="+country.CountryId+">"+country.Name+"</option>";
+            });
+            movieData.Genres.$values.forEach(function(genre){
+                genres += "<option value="+genre.GenreId+">"+genre.Title+"</option>";
+            });
+            movieData.Actors.$values.forEach(function(actor){
+                actors += "<option value="+actor.ActorId+">"+actor.FullName+"</option>";
+            });
+
+            var createMovieContent = 
+
+            '<form id="createMoviePanel" ><div class="form-horizontal col-md-8">\
+                <h4>Movie</h4>\
+                <hr>\
+                \
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Year">Year</label>\
+                    <div class="col-md-10">\
+                        <input class="form-control" data-val="true" data-val-date="The field Year must be a date." data-val-required="The Year field is required." id="Movie_Year" name="Movie.Year" type="date" value="">\
+                    </div>\
+                    <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Year" data-valmsg-replace="true"></span>\
+                </div>\
+            \
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Title">Title</label>\
+                    <div class="col-md-10">\
+                        <input class="form-control text-box single-line" id="Movie_Title" name="Movie.Title" type="text" value="">\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Title" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Director">Director</label>\
+                    <div class="col-md-10">\
+                        <input class="form-control text-box single-line" id="Movie_Director" name="Movie.Director" type="text" value="">\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Director" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Description">Description</label>\
+                    <div class="col-md-10">\
+                        <textarea class="form-control" cols="20" id="Movie_Description" name="Movie.Description" rows="2"></textarea>\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Description" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Country">Country</label>\
+                    <div class="col-md-10">\
+                        <select class="form-control" data-val="true"id="CountryId" name="CountryId">\
+                        '+countries+'\
+                        </select>\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Country" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+            \
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Count">Count</label>\
+                    <div class="col-md-10">\
+                        <input class="form-control text-box single-line" data-val="true" data-val-number="The field Count must be a number." data-val-required="The Count field is required." id="Movie_Count" name="Movie.Count" type="number" value="">\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Count" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+            \
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Genre">Genre</label>\
+                    <div class="col-md-10">\
+            \
+                    <select class="form-control" id="GenreIds" multiple="multiple" name="GenreIds">\
+                    '+genres+'\
+                    </select>\
+                    </div>\
+                </div>\
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Actors">Actors</label>\
+                    <div class="col-md-10">\
+                        <select class="form-control" id="ActorIds" multiple="multiple" name="ActorIds">\
+                        '+actors+'\
+                        </select>\
+                    </div>\
+                </div>\
+            \
+                <div class="form-group">\
+                    <div class="col-md-offset-2 col-md-10">\
+                        <input type="submit" value="Create" class="btn btn-default" onclick="CreateNewMovie()">\
+                    </div>\
+                </div>\
+            </div></form>';
+
+            $("#videClubContent").html(createMovieContent);
+        });
+    }
+
+    function CreateNewMovie()
+    {
+        var movieDataUrl = appUrl + "CreateMovie/";
+
+        $("#createMoviePanel").submit(function( event ) {
+            event.preventDefault();
+            var data = {};
+            var rowData = $(this).serializeArray();
+
+            for (var i = 0; i < rowData.length; i++) {
+                data[rowData[i].name] = rowData[i].value;
+            }
+            data["GenreIds"] = $("#GenreIds").val();
+            data["ActorIds"] = $("#ActorIds").val();
+
+            $.ajax({
+                type: "POST",
+                data: JSON.stringify(data),
+                url: movieDataUrl,
+                contentType: "application/json",
+                success: function (movies) {
+                    ListAllMoviesView(JSON.parse(movies));
+                }
+            });    
+        });
+    }
+
+    function EditMovieView(id)
+    {
+        var movieUrl = appUrl + "GetMovieById/" + id;
+        $.get(movieUrl, function (movie) {
+            movie = JSON.parse(movie);
+            console.log(movie);
+
+            var movieDataUrl = appUrl + "GetMovieData/";
+            $.get(movieDataUrl, function (movieData) {
+                var countries = "";
+                var genres = "";
+                var actors = "";
+
+                movieData.Countries.$values.forEach(function (country) {
+                    if (movie.Country.CountryId == country.CountryId)
+                        countries += "<option selected value=" + country.CountryId + ">" + country.Name + "</option>";
+                    else
+                        countries += "<option value=" + country.CountryId + ">" + country.Name + "</option>";
+                });
+                movieData.Genres.$values.forEach(function (genre) {
+                    if (movie.Genres.filter(g => g.GenreId == genre.GenreId).length)
+                        genres += "<option selected value=" + genre.GenreId + ">" + genre.Title + "</option>";
+                    else
+                        genres += "<option value=" + genre.GenreId + ">" + genre.Title + "</option>";
+                });
+                movieData.Actors.$values.forEach(function (actor) {
+                    if (movie.Actors.filter(a => a.ActorId == actor.ActorId).length)
+                        actors += "<option selected value=" + actor.ActorId + ">" + actor.FullName + "</option>";
+                    else
+                        actors += "<option value=" + actor.ActorId + ">" + actor.FullName + "</option>";
+                });
+
+                var editMovieContent =
+
+                '<form id="editMoviePanel" ><div class="form-horizontal col-md-8">\
+                <h4>Movie</h4>\
+                <hr>\
+                \
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Year">Year</label>\
+                    <div class="col-md-10">\
+                        <input class="form-control" data-val="true" required="The Year field is required." id="Movie_Year" name="Movie.Year" type="date" value="'+ movie.Year.split("T")[0] +'">\
+                    </div>\
+                    <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Year" data-valmsg-replace="true"></span>\
+                </div>\
+            \
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Title">Title</label>\
+                    <div class="col-md-10">\
+                        <input class="form-control text-box single-line" id="Movie_Title" name="Movie.Title" type="text" value="'+ movie.Title +'">\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Title" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Director">Director</label>\
+                    <div class="col-md-10">\
+                        <input class="form-control text-box single-line" id="Movie_Director" name="Movie.Director" type="text" value="'+ movie.Director +'">\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Director" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Description">Description</label>\
+                    <div class="col-md-10">\
+                        <textarea class="form-control" cols="20" id="Movie_Description" name="Movie.Description" rows="2">'+ movie.Description +'</textarea>\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Description" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Country">Country</label>\
+                    <div class="col-md-10">\
+                        <select class="form-control" data-val="true"id="CountryId" name="CountryId">\
+                        '+ countries + '\
+                        </select>\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Country" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+            \
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Movie_Count">Count</label>\
+                    <div class="col-md-10">\
+                        <input class="form-control text-box single-line" data-val="true" required="The Count field is required." id="Movie_Count" name="Movie.Count" type="number" value="'+ movie.Count +'">\
+                        <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Count" data-valmsg-replace="true"></span>\
+                    </div>\
+                </div>\
+            \
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Genre">Genre</label>\
+                    <div class="col-md-10">\
+            \
+                    <select class="form-control" id="GenreIds" multiple="multiple" name="GenreIds">\
+                    '+ genres + '\
+                    </select>\
+                    </div>\
+                </div>\
+                <div class="form-group">\
+                    <label class="control-label col-md-2" for="Actors">Actors</label>\
+                    <div class="col-md-10">\
+                        <select class="form-control" id="ActorIds" multiple="multiple" name="ActorIds">\
+                        '+ actors + '\
+                        </select>\
+                    </div>\
+                </div>\
+            \
+                <div class="form-group">\
+                    <div class="col-md-offset-2 col-md-10">\
+                        <input type="submit" value="Edit" class="btn btn-default" onclick="EditMovie('+ movie.MovieId +')">\
+                    </div>\
+                </div>\
+            </div></form>';
+
+                $("#videClubContent").html(editMovieContent);
+            });
+        });
+
+
+        return false;
+    }
+
+    function EditMovie(id) {
+        var movieUrl = appUrl + "EditMovie/";
+
+        $("#editMoviePanel").submit(function (event) {
+            event.preventDefault();
+            var data = {};
+            var rowData = $(this).serializeArray();
+
+            for (var i = 0; i < rowData.length; i++) {
+                data[rowData[i].name] = rowData[i].value;
+            }
+            data["GenreIds"] = $("#GenreIds").val();
+            data["ActorIds"] = $("#ActorIds").val();
+            data["MovieId"] = id;
+
+            $.ajax({
+                type: "POST",
+                data: JSON.stringify(data),
+                url: movieUrl,
+                contentType: "application/json",
+                success: function (movies) {
+                    ListAllMoviesView(JSON.parse(movies));
+                }
+            });
+        });
+    }
+
+    function DeleteMovieView(id)
+    {
+        return false;
+    }
+
+</script>
+
+</body>
+</html>
