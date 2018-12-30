@@ -12,131 +12,130 @@ using Newtonsoft.Json;
 using System.Web.Http.Cors;
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using WebApplication2.Repositiories;
 
 namespace WebApplication2.Controllers
 {
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class VideoClubWebApiController : ApiController
     {
+        private IActorRepository _actorRepository;
+        private ICountryRepository _countryRepository;
+        private IGenreRepository _genreRepository;
+        private IMovieRepository _movieRepository;
+
+        public VideoClubWebApiController()
+        {
+            VideoClubContext videoClubContext = new VideoClubContext();
+            _actorRepository = new ActorRepository(videoClubContext);
+            _countryRepository = new CountryRepository(videoClubContext);
+            _genreRepository = new GenreRepository(videoClubContext);
+            _movieRepository = new MovieRepository(videoClubContext);
+        }
+
         // GET api/values
         public string Get()
         {
-            using (var videoClubContext = new VideoClubContext())
-            {
-                List<Movie> movies = videoClubContext.Movies.Include(m => m.Genres).ToList();
-                var moviesJson = JsonConvert.SerializeObject(movies);
-                return moviesJson;
-            }
+            IEnumerable<Movie> movies = _movieRepository.GetMovies();
+            var moviesJson = JsonConvert.SerializeObject(movies);
+            return moviesJson;
         }
 
-        // GET api/<controller>/5
-        public string Get(int id)
-        {
-            return "value";
-        }
+        //// GET api/<controller>/5
+        //public string Get(int id)
+        //{
+        //    return "value";
+        //}
 
         // POST api/<controller>
-        public void Post([FromBody]string value)
-        {
-        }
+        //public void Post([FromBody]string value)
+        //{
+        //}
 
-        // PUT api/<controller>/5
-        public void Put(int id, [FromBody]string value)
-        {
-        }
+        //// PUT api/<controller>/5
+        //public void Put(int id, [FromBody]string value)
+        //{
+        //}
 
         // DELETE api/<controller>/5
-        public void Delete(int id)
+        [System.Web.Http.HttpGet]
+        [System.Web.Http.Route("api/VideoClubWebApi/DeleteMovie/{id}")]
+        public string DeleteMovie(int id)
         {
+            _movieRepository.RemoveMovieById(id);
+            _movieRepository.Save();
+
+            return Get();
         }
 
         [System.Web.Http.Route("api/VideoClubWebApi/GetMovieData")]
         [System.Web.Http.HttpGet]
         public object GetMovieData()
         {
-            using (var videoClubContext = new VideoClubContext())
+            return new
             {
-                return new
-                {
-                    Countries = videoClubContext.Countries.ToList(),
-                    Genres = videoClubContext.Genres.ToList(),
-                    Actors = videoClubContext.Actors.ToList()
-                };
-            }
+                Countries = _countryRepository.GetCountries().ToList(),
+                Genres = _genreRepository.GetGenres().ToList(),
+                Actors = _actorRepository.GetActors().ToList()
+            };
         }
 
         [System.Web.Http.Route("api/VideoClubWebApi/CreateMovie")]
         [System.Web.Http.HttpPost]
         public string CreateMovie(JObject jsonObject)
         {
-            using (var videoClubContext = new VideoClubContext())
-            {
-                Movie movie = new Movie();
-                movie.Year = DateTime.Parse(jsonObject["Movie.Year"].ToString());
-                movie.Title = jsonObject["Movie.Title"].ToString();
-                movie.Director = jsonObject["Movie.Director"].ToString();
-                movie.Description = jsonObject["Movie.Description"].ToString();
-                int countryId = int.Parse(jsonObject["CountryId"].ToString());
-                Country movieCountry = videoClubContext.Countries.FirstOrDefault(c=>c.CountryId == countryId);
-                movie.Country = movieCountry;
-                movie.Count = int.Parse(jsonObject["Movie.Count"].ToString());
-                List<int> genreIds = jsonObject["GenreIds"].AsEnumerable().Select(x => int.Parse(x.ToString())).ToList();
-                movie.Genres = videoClubContext.Genres.Where(g => genreIds.Contains(g.GenreId)).ToList();
-                List<int> actorIds = jsonObject["ActorIds"].AsEnumerable().Select(x => int.Parse(x.ToString())).ToList();
-                movie.Actors = videoClubContext.Actors.Where(a => actorIds.Contains(a.ActorId)).ToList();
-                videoClubContext.Movies.Add(movie);
+            Movie movie = new Movie();
+            movie.Year = DateTime.Parse(jsonObject["Movie.Year"].ToString());
+            movie.Title = jsonObject["Movie.Title"].ToString();
+            movie.Director = jsonObject["Movie.Director"].ToString();
+            movie.Description = jsonObject["Movie.Description"].ToString();
+            int countryId = int.Parse(jsonObject["CountryId"].ToString());
+            Country movieCountry = _countryRepository.GetCountries().FirstOrDefault(c=>c.CountryId == countryId);
+            movie.Country = movieCountry;
+            movie.Count = int.Parse(jsonObject["Movie.Count"].ToString());
+            List<int> genreIds = jsonObject["GenreIds"].AsEnumerable().Select(x => int.Parse(x.ToString())).ToList();
+            movie.Genres = _genreRepository.GetGenres().Where(g => genreIds.Contains(g.GenreId)).ToList();
+            List<int> actorIds = jsonObject["ActorIds"].AsEnumerable().Select(x => int.Parse(x.ToString())).ToList();
+            movie.Actors = _actorRepository.GetActors().Where(a => actorIds.Contains(a.ActorId)).ToList();
+            _movieRepository.InsertMovie(movie);
+            _movieRepository.Save();
 
-                videoClubContext.SaveChanges();
-
-                List<Movie> movies = videoClubContext.Movies.Include(m => m.Genres).ToList();
-                var moviesJson = JsonConvert.SerializeObject(movies);
-                return moviesJson;
-            }
-
+            IEnumerable<Movie> movies = _movieRepository.GetMovies();
+            var moviesJson = JsonConvert.SerializeObject(movies);
+            return moviesJson;
         }
 
         [System.Web.Http.Route("api/VideoClubWebApi/GetMovieById/{id}")]
         [System.Web.Http.HttpGet]
         public string GetMovieById(int id)
         {
-            using (var videoClubContext = new VideoClubContext())
-            {
-                Movie movie = videoClubContext.Movies.FirstOrDefault(m=>m.MovieId == id);
-                var movieJson = JsonConvert.SerializeObject(movie);
-                return movieJson;
-            }
+            Movie movie = _movieRepository.GetMovieById(id);
+            var movieJson = JsonConvert.SerializeObject(movie);
+            return movieJson;
         }
 
         [System.Web.Http.Route("api/VideoClubWebApi/EditMovie")]
         [System.Web.Http.HttpPost]
         public string EditMovie(JObject jsonObject)
         {
-            using (var videoClubContext = new VideoClubContext())
-            {
-                int movieId = int.Parse(jsonObject["MovieId"].ToString());
-                Movie movie = videoClubContext.Movies.First(m => m.MovieId == movieId);
-                movie.Year = DateTime.Parse(jsonObject["Movie.Year"].ToString());
-                movie.Title = jsonObject["Movie.Title"].ToString();
-                movie.Director = jsonObject["Movie.Director"].ToString();
-                movie.Description = jsonObject["Movie.Description"].ToString();
-                int countryId = int.Parse(jsonObject["CountryId"].ToString());
-                Country movieCountry = videoClubContext.Countries.FirstOrDefault(c => c.CountryId == countryId);
-                movie.Country = movieCountry;
-                movie.Count = int.Parse(jsonObject["Movie.Count"].ToString());
-                List<int> genreIds = jsonObject["GenreIds"].Select(x => int.Parse(x.ToString())).ToList();
-                List<Genre> databaseGenres = videoClubContext.Genres.Include(g => g.Movies).ToList();
-                movie.Genres = databaseGenres.Where(g => genreIds.Contains(g.GenreId)).ToList();
-                List<int> actorIds = jsonObject["ActorIds"].Select(x => int.Parse(x.ToString())).ToList();
-                List<Actor> databaseActors = videoClubContext.Actors.Include(a => a.Movies).ToList();
-                movie.Actors = databaseActors.Where(a => actorIds.Contains(a.ActorId)).ToList();
-                
+            int movieId = int.Parse(jsonObject["MovieId"].ToString());
+            Movie movie = _movieRepository.GetMovieById(movieId);
+            movie.Year = DateTime.Parse(jsonObject["Movie.Year"].ToString());
+            movie.Title = jsonObject["Movie.Title"].ToString();
+            movie.Director = jsonObject["Movie.Director"].ToString();
+            movie.Description = jsonObject["Movie.Description"].ToString();
+            int countryId = int.Parse(jsonObject["CountryId"].ToString());
+            Country movieCountry = _countryRepository.GetCountryById(countryId);
+            movie.Country = movieCountry;
+            movie.Count = int.Parse(jsonObject["Movie.Count"].ToString());
+            List<int> genreIds = jsonObject["GenreIds"].Select(x => int.Parse(x.ToString())).ToList();
+            IEnumerable<Genre> databaseGenres = _genreRepository.GetGenres();
+            movie.Genres = databaseGenres.Where(g => genreIds.Contains(g.GenreId)).ToList();
+            List<int> actorIds = jsonObject["ActorIds"].Select(x => int.Parse(x.ToString())).ToList();
+            movie.Actors = _actorRepository.GetActorsWhere(a => actorIds.Contains(a.ActorId)).ToList();
+            _movieRepository.Save();
 
-                videoClubContext.SaveChanges();
-
-                List<Movie> movies = videoClubContext.Movies.Include(m => m.Genres).ToList();
-                var moviesJson = JsonConvert.SerializeObject(movies);
-                return moviesJson;
-            }
+            return Get();
         }
     }
 }

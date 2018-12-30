@@ -16,16 +16,18 @@
     
 </head>
 <body>
-<nav class="nav">
-  <a class="nav-link active" href="#">Active</a>
-  <a class="nav-link" href="#">Link</a>
-  <a class="nav-link" href="#">Link</a>
-  <a class="nav-link disabled" href="#">Disabled</a>
-</nav>
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="nav">
+        <a class="nav-link" href="#" onclick="ListAllMoviesView1()">Home</a>
+        <a class="nav-link" href="#" onclick="CreateMovieView()">Create Movie</a>
+    </nav>
+</div>
 
-<div class="container">
-    <div class="col-md-12">
-        <div id="videClubContent" class="table">
+<div class="container" style="margin-top: 50px;">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="videClubContent" class="table">
+            </div>
         </div>
     </div>
 </div>
@@ -36,20 +38,24 @@ var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
     
     $(document).ready(function () {
         $.get(appUrl, function (movies) {
-            console.log(JSON.parse(movies));
             ListAllMoviesView(JSON.parse(movies));
         });
     });
 
+    function ListAllMoviesView1() {
+        $.get(appUrl, function (movies) {
+            ListAllMoviesView(JSON.parse(movies));
+        });
+    }
+
     function ListAllMoviesView(movies)
     {
-        var tableContent = "<button onclick=\"CreateMovieView()\">CreateNew</button><table  class=\"table\"><tr><th>Title</th><th>Director</th><th>Year</th><th>Count</th><th>Genres</th><th></th></tr>";
+        var tableContent = "<table class=\"table\"><tr><th>Title</th><th>Director</th><th>Year</th><th>Count</th><th>Genres</th><th></th></tr>";
         var localMovies;
         
         localMovies = movies;
         movies.forEach(function (movie) {
             var localGenres = "";
-            console.log(movie.Genres.$values);
             movie.Genres.forEach(function (genre, index, genres) {
                 var comma = ", ";
                 if (index == genres.length - 1)
@@ -66,7 +72,7 @@ var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
                         "+ movie.Director + "\
                     </td>\
                     <td>\
-                        "+ movie.Year + "\
+                        "+ new Date(movie.Year).toLocaleDateString() + "\
                     </td>\
                     <td>\
                         "+ movie.Count + "\
@@ -76,10 +82,12 @@ var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
                     </td>\
                     <td>\
                         <a href='#' onclick='return EditMovieView("+ movie.MovieId +")'>Edit</a> | \
+                        <a href='#' onclick='return MovieDetailsView("+ movie.MovieId +")'>Details</a> | \
                         <a href='#' onclick='return DeleteMovieView("+ movie.MovieId +")'>Delete</a>\
                     </td>\
                 </tr>";
         });
+        tableContent += "</table><a href=\"#\" onclick=\"CreateMovieView()\">Create New Movie</a>";
 
         $("#videClubContent").html(tableContent);
     }
@@ -103,7 +111,6 @@ var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
             });
 
             var createMovieContent = 
-
             '<form id="createMoviePanel" ><div class="form-horizontal col-md-8">\
                 <h4>Movie</h4>\
                 <hr>\
@@ -180,6 +187,8 @@ var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
                 </div>\
             </div></form>';
 
+            createMovieContent += '<a class="nav-link" href="#" onclick="ListAllMoviesView1()">Back to List</a>';
+
             $("#videClubContent").html(createMovieContent);
         });
     }
@@ -216,8 +225,6 @@ var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
         var movieUrl = appUrl + "GetMovieById/" + id;
         $.get(movieUrl, function (movie) {
             movie = JSON.parse(movie);
-            console.log(movie);
-
             var movieDataUrl = appUrl + "GetMovieData/";
             $.get(movieDataUrl, function (movieData) {
                 var countries = "";
@@ -256,7 +263,7 @@ var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
                     </div>\
                     <span class="field-validation-valid text-danger" data-valmsg-for="Movie.Year" data-valmsg-replace="true"></span>\
                 </div>\
-            \
+                \
                 <div class="form-group">\
                     <label class="control-label col-md-2" for="Movie_Title">Title</label>\
                     <div class="col-md-10">\
@@ -321,7 +328,9 @@ var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
                 </div>\
             </div></form>';
 
-                $("#videClubContent").html(editMovieContent);
+            editMovieContent += '<a class="nav-link" href="#" onclick="ListAllMoviesView1()">Back to List</a>';
+
+            $("#videClubContent").html(editMovieContent);
             });
         });
 
@@ -358,7 +367,88 @@ var appUrl = "http://localhost:54705/api/VideoClubWebApi/";
 
     function DeleteMovieView(id)
     {
-        return false;
+        var deleteUrl = appUrl + "DeleteMovie/" + id;
+
+        $.ajax({
+            type: "GET",
+            data: {},
+            url: deleteUrl,
+            contentType: "application/json",
+            success: function (movies) {
+                console.log(movies)
+                ListAllMoviesView(JSON.parse(movies));
+            }
+        });
+    }
+
+    function MovieDetailsView(id)
+    {
+        var movieUrl = appUrl + "GetMovieById/" + id;
+        $.get(movieUrl, function (movie) {
+            movie = JSON.parse(movie);
+
+            var movieDetailsContent = '\
+            < h2 > Details</h2>\
+            \
+                <div>\
+                    <h4>Movie</h4>\
+                    <hr />\
+                    <dl class="dl-horizontal">\
+                        <dt>\
+                            Year\
+                        </dt >\
+                        <dd>\
+                            '+ movie.Year + '\
+                        </dd>\
+                            \
+                        <dt>\
+                            Title\
+                        </dt >\
+                        <dd>\
+                           '+ movie.Title + '\
+                        </dd>\
+                            \
+                        <dt>\
+                            Director\
+                        </dt >\
+                        <dd>\
+                            '+ movie.Director + '\
+                        </dd>\
+                            \
+                        <dt>\
+                            Description\
+                        </dt >\
+                        <dd>\
+                            '+ movie.Description + '\
+                        </dd>\
+                            \
+                        <dt>\
+                            Country Name\
+                        </dt >\
+                        <dd>\
+                            '+ movie.Country.Name + '\
+                        </dd>\
+                            \
+                        <dt>\
+                            Count\
+                        </dt >\
+                        <dd>\
+                            '+ movie.Count + '\
+                        </dd>\
+                            \
+                        <dd>\
+                           \
+                        </dd>\
+                        \
+                    </dl>\
+                </div>\
+                <p>\
+            </p>';
+            movieDetailsContent += '<a class="nav-link" href="#" onclick="EditMovieView(' + movie.MovieId +')">Edit</a>';
+            movieDetailsContent += '<a class="nav-link" href="#" onclick="ListAllMoviesView1()">Back to List</a>';
+
+            $("#videClubContent").html(movieDetailsContent);
+        });
     }
 
 </script>
