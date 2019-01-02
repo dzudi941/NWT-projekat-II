@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using WebApplication2.Logger;
 using WebApplication2.Models;
 
 namespace WebApplication2.Repositiories
@@ -8,10 +9,12 @@ namespace WebApplication2.Repositiories
     public class CountryRepository: ICountryRepository, IDisposable
     {
         private VideoClubContext _context;
+        private ILogger _logger;
 
-        public CountryRepository(VideoClubContext context)
+        public CountryRepository(VideoClubContext context, ILogger logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public IEnumerable<Country> GetCountries()
@@ -38,6 +41,7 @@ namespace WebApplication2.Repositiories
         public void Save()
         {
             _context.SaveChanges();
+            _logger.Log(DateTime.Now.ToString() + " - [Country] Save changes to database.");
         }
 
         private bool disposed = false;

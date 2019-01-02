@@ -13,6 +13,7 @@ using System.Web.Http.Cors;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using WebApplication2.Repositiories;
+using WebApplication2.Logger;
 
 namespace WebApplication2.Controllers
 {
@@ -27,8 +28,8 @@ namespace WebApplication2.Controllers
         public VideoClubWebApiController()
         {
             VideoClubContext videoClubContext = new VideoClubContext();
-            _actorRepository = new ActorRepository(videoClubContext);
-            _countryRepository = new CountryRepository(videoClubContext);
+            _actorRepository = new ActorRepository(videoClubContext, new FileLogger());
+            _countryRepository = new CountryRepository(videoClubContext, new ConsoleLogger());
             _genreRepository = new GenreRepository(videoClubContext);
             _movieRepository = new MovieRepository(videoClubContext);
         }

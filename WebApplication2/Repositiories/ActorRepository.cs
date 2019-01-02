@@ -3,16 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using WebApplication2.Models;
 using System.Data.Entity;
+using WebApplication2.Logger;
 
 namespace WebApplication2.Repositiories
 {
     public class ActorRepository : IActorRepository, IDisposable
     {
         private VideoClubContext _context;
+        private ILogger _logger;
 
-        public ActorRepository(VideoClubContext context)
+        public ActorRepository(VideoClubContext context, ILogger logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public IEnumerable<Actor> GetActors()
@@ -44,6 +47,7 @@ namespace WebApplication2.Repositiories
         public void Save()
         {
             _context.SaveChanges();
+            _logger.Log(DateTime.Now.ToString() + " - [Actor] Save changes to database.");
         }
 
         private bool disposed = false;
