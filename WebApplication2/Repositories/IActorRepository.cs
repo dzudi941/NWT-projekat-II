@@ -9,6 +9,7 @@ namespace WebApplication2.Repositiories
         IEnumerable<Actor> GetActors();
         IEnumerable<Actor> GetActorsWhere(Func<Actor, bool> predicate);
         Actor GetActorById(int id);
+        IEnumerable<Actor> FindByIds(IEnumerable<int> ids);
         void InsertActor(Actor actor);
         Actor DeleteActorById(int id);
         void Save();

@@ -10,7 +10,7 @@ namespace WebApplication2.Repositiories
     interface ICountryRepository
     {
         IEnumerable<Country> GetCountries();
-        Country GetCountryById(int id);
+        Country FindById(int id);
         void InsertCountry(Country country);
         Country DeleteCountryById(int id);
         void Save();

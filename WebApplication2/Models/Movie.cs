@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
+using WebApplication2.ViewModels;
 
 namespace WebApplication2.Models
 {
@@ -36,7 +37,17 @@ namespace WebApplication2.Models
             this.Genres = new HashSet<Genre>();
             this.Actors = new HashSet<Actor>();
         }
-        
 
+        public Movie(MovieViewModel movieViewModel, Country country, List<Genre> genres, List<Actor> actors)
+        {
+            Year = movieViewModel.Year;
+            Title = movieViewModel.Title;
+            Director = movieViewModel.Director;
+            Description = movieViewModel.Description;
+            Country = country;
+            Actors = actors;
+            Count = movieViewModel.Count;
+            Genres = genres;
+        }
     }
 }

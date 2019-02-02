@@ -22,7 +22,7 @@ namespace WebApplication2.Repositiories
             return _context.Countries.ToList();
         }
 
-        public Country GetCountryById(int id)
+        public Country FindById(int id)
         {
             return _context.Countries.FirstOrDefault(c => c.CountryId == id);
         }

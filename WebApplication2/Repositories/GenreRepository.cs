@@ -25,6 +25,11 @@ namespace WebApplication2.Repositiories
             return _context.Genres.Where(predicate).ToList();
         }
 
+        public IEnumerable<Genre> FindByIds(IEnumerable<int> ids)
+        {
+            return _context.Genres.Where(x => ids.Contains(x.GenreId));
+        }
+
         public void InsertGenre(Genre genre)
         {
             _context.Genres.Add(genre);

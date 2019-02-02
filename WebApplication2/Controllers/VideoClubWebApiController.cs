@@ -14,6 +14,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using WebApplication2.Repositiories;
 using WebApplication2.Logger;
+using WebApplication2.ViewModels;
 
 namespace WebApplication2.Controllers
 {
@@ -35,11 +36,12 @@ namespace WebApplication2.Controllers
         }
 
         // GET api/values
-        public string Get()
+        public IEnumerable<MovieViewModel> Get()
         {
-            IEnumerable<Movie> movies = _movieRepository.GetMovies();
-            var moviesJson = JsonConvert.SerializeObject(movies);
-            return moviesJson;
+            //IEnumerable<Movie> movies = _movieRepository.GetMovies();
+            //var moviesJson = JsonConvert.SerializeObject(movies);
+            //return moviesJson;
+            return _movieRepository.GetMovies().Select(x => new MovieViewModel(x));
         }
 
         //// GET api/<controller>/5
@@ -66,53 +68,37 @@ namespace WebApplication2.Controllers
             _movieRepository.RemoveMovieById(id);
             _movieRepository.Save();
 
-            return Get();
+            return null;// Get();
         }
 
         [System.Web.Http.Route("api/VideoClubWebApi/GetMovieData")]
         [System.Web.Http.HttpGet]
-        public object GetMovieData()
+        public MovieDataViewModel GetMovieData()
         {
-            return new
-            {
-                Countries = _countryRepository.GetCountries().ToList(),
-                Genres = _genreRepository.GetGenres().ToList(),
-                Actors = _actorRepository.GetActors().ToList()
-            };
+            return new MovieDataViewModel(_countryRepository.GetCountries(), _genreRepository.GetGenres(), _actorRepository.GetActors());
         }
 
         [System.Web.Http.Route("api/VideoClubWebApi/CreateMovie")]
         [System.Web.Http.HttpPost]
-        public string CreateMovie(JObject jsonObject)
+        public void CreateMovie( MovieViewModel movieViewModel)
         {
-            Movie movie = new Movie();
-            movie.Year = DateTime.Parse(jsonObject["Movie.Year"].ToString());
-            movie.Title = jsonObject["Movie.Title"].ToString();
-            movie.Director = jsonObject["Movie.Director"].ToString();
-            movie.Description = jsonObject["Movie.Description"].ToString();
-            int countryId = int.Parse(jsonObject["CountryId"].ToString());
-            Country movieCountry = _countryRepository.GetCountries().FirstOrDefault(c=>c.CountryId == countryId);
-            movie.Country = movieCountry;
-            movie.Count = int.Parse(jsonObject["Movie.Count"].ToString());
-            List<int> genreIds = jsonObject["GenreIds"].AsEnumerable().Select(x => int.Parse(x.ToString())).ToList();
-            movie.Genres = _genreRepository.GetGenres().Where(g => genreIds.Contains(g.GenreId)).ToList();
-            List<int> actorIds = jsonObject["ActorIds"].AsEnumerable().Select(x => int.Parse(x.ToString())).ToList();
-            movie.Actors = _actorRepository.GetActors().Where(a => actorIds.Contains(a.ActorId)).ToList();
+            var a = movieViewModel;
+            var country = _countryRepository.FindById(movieViewModel.SelectedCountry);
+            var genres = _genreRepository.FindByIds(movieViewModel.SelectedGenres).ToList();
+            var actors = _actorRepository.FindByIds(movieViewModel.SelectedActors).ToList();
+            
+            Movie movie = new Movie(movieViewModel, country, genres, actors);
             _movieRepository.InsertMovie(movie);
             _movieRepository.Save();
-
-            IEnumerable<Movie> movies = _movieRepository.GetMovies();
-            var moviesJson = JsonConvert.SerializeObject(movies);
-            return moviesJson;
         }
 
         [System.Web.Http.Route("api/VideoClubWebApi/GetMovieById/{id}")]
         [System.Web.Http.HttpGet]
-        public string GetMovieById(int id)
+        public MovieViewModel GetMovieById(int id)
         {
             Movie movie = _movieRepository.GetMovieById(id);
-            var movieJson = JsonConvert.SerializeObject(movie);
-            return movieJson;
+            
+            return new MovieViewModel(movie);
         }
 
         [System.Web.Http.Route("api/VideoClubWebApi/EditMovie")]
@@ -126,7 +112,7 @@ namespace WebApplication2.Controllers
             movie.Director = jsonObject["Movie.Director"].ToString();
             movie.Description = jsonObject["Movie.Description"].ToString();
             int countryId = int.Parse(jsonObject["CountryId"].ToString());
-            Country movieCountry = _countryRepository.GetCountryById(countryId);
+            Country movieCountry = _countryRepository.FindById(countryId);
             movie.Country = movieCountry;
             movie.Count = int.Parse(jsonObject["Movie.Count"].ToString());
             List<int> genreIds = jsonObject["GenreIds"].Select(x => int.Parse(x.ToString())).ToList();
@@ -136,7 +122,7 @@ namespace WebApplication2.Controllers
             movie.Actors = _actorRepository.GetActorsWhere(a => actorIds.Contains(a.ActorId)).ToList();
             _movieRepository.Save();
 
-            return Get();
+            return null;// Get();
         }
     }
 }

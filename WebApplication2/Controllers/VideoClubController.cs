@@ -61,7 +61,7 @@ namespace WebApplication2.Controllers
                 movie.Count = movieGenres.Movie.Count;
                 movie.Genres = _genreRepository.GetGenresWhere(g => movieGenres.GenreIds.Contains(g.GenreId)).ToList();
                 movie.Actors = _actorRepository.GetActorsWhere(a => movieGenres.ActorIds.Contains(a.ActorId)).ToList();
-                movie.Country = _countryRepository.GetCountryById(movieGenres.CountryId);
+                movie.Country = _countryRepository.FindById(movieGenres.CountryId);
 
                 _movieRepository.InsertMovie(movie);
                 _movieRepository.Save();
@@ -100,7 +100,7 @@ namespace WebApplication2.Controllers
                 movie.Title = movieGenres.Movie.Title;
                 movie.Director = movieGenres.Movie.Director;
                 movie.Description = movieGenres.Movie.Description;
-                movie.Country = _countryRepository.GetCountryById(movieGenres.CountryId);
+                movie.Country = _countryRepository.FindById(movieGenres.CountryId);
                 movie.Count = movieGenres.Movie.Count;
                 movie.Genres = _genreRepository.GetGenresWhere(x => movieGenres.GenreIds.Contains(x.GenreId)).ToList();
                 movie.Actors = _actorRepository.GetActorsWhere(a => movieGenres.ActorIds.Contains(a.ActorId)).ToList();
@@ -199,7 +199,7 @@ namespace WebApplication2.Controllers
                 actor.FullName = movieGenres.Actor.FullName;
                 actor.BirthDate = movieGenres.Actor.BirthDate;
                 actor.Biography = movieGenres.Actor.Biography;
-                actor.Country = _countryRepository.GetCountryById(movieGenres.CountryId);
+                actor.Country = _countryRepository.FindById(movieGenres.CountryId);
 
                 _actorRepository.InsertActor(actor);
                 _actorRepository.Save();
@@ -234,7 +234,7 @@ namespace WebApplication2.Controllers
                 actor.FullName = movieGenre.Actor.FullName;
                 actor.BirthDate = movieGenre.Actor.BirthDate;
                 actor.Biography = movieGenre.Actor.Biography;
-                actor.Country = _countryRepository.GetCountryById(movieGenre.CountryId);
+                actor.Country = _countryRepository.FindById(movieGenre.CountryId);
 
                 _actorRepository.Save();
 

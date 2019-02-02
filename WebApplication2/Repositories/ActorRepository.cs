@@ -33,6 +33,11 @@ namespace WebApplication2.Repositiories
             return _context.Actors.Include(a => a.Country).FirstOrDefault(a => a.ActorId == id);
         }
 
+        public IEnumerable<Actor> FindByIds(IEnumerable<int> ids)
+        {
+            return _context.Actors.Where(x => ids.Contains(x.ActorId)).ToList();
+        }
+
         public void InsertActor(Actor actor)
         {
             _context.Actors.Add(actor);

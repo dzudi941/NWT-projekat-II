@@ -8,6 +8,7 @@ namespace WebApplication2.Repositiories
     {
         IEnumerable<Genre> GetGenres();
         IEnumerable<Genre> GetGenresWhere(Func<Genre, bool> predicate);
+        IEnumerable<Genre> FindByIds(IEnumerable<int> ids);
         void InsertGenre(Genre genre);
         Genre DeleteGenreById(int id);
         void Save();
