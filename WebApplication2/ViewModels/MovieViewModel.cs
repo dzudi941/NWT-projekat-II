@@ -31,7 +31,7 @@ namespace WebApplication2.ViewModels
             Director = movie.Director;
             Description = movie.Description;
             Count = movie.Count;
-            SelectedCountry = movie.Country.CountryId;
+            SelectedCountry = movie.Country?.CountryId ?? 0;
             SelectedGenres = movie.Genres.Select(x => x.GenreId);
             SelectedActors = movie.Actors.Select(x => x.ActorId);
 

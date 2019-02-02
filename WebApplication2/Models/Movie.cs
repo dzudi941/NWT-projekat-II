@@ -49,5 +49,17 @@ namespace WebApplication2.Models
             Count = movieViewModel.Count;
             Genres = genres;
         }
+
+        public void CopyFromVM(MovieViewModel movieViewModel, Country country, List<Genre> genres, List<Actor> actors)
+        {
+            Year = movieViewModel.Year;
+            Title = movieViewModel.Title;
+            Director = movieViewModel.Director;
+            Description = movieViewModel.Description;
+            Country = country;
+            Actors = actors;
+            Count = movieViewModel.Count;
+            Genres = genres;
+        }
     }
 }

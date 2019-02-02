@@ -17,7 +17,7 @@ namespace WebApplication2.Repositiories
 
         public IEnumerable<Movie> GetMovies()
         {
-            return _context.Movies.Include(m => m.Genres).ToList();
+            return _context.Movies.Include(m => m.Country).Include(m => m.Genres).Include(m => m.Actors).ToList();
         }
 
         public Movie GetMovieById(int id)
