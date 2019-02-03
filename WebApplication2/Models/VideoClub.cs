@@ -2,7 +2,17 @@
 
 namespace WebApplication2.Models
 {
-    public class VideoClubContext : DbContext
+    public interface IVideoClubContext
+    {
+        DbSet<Movie> Movies { get; set; }
+        DbSet<Genre> Genres { get; set; }
+        DbSet<Actor> Actors { get; set; }
+        DbSet<Country> Countries { get; set; }
+        int SaveChanges();
+        void Dispose();
+    }
+
+    public class VideoClubContext : DbContext, IVideoClubContext
     {
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Genre> Genres { get; set; }
@@ -33,5 +43,4 @@ namespace WebApplication2.Models
                 .WithOptional(m => m.Country);
         }
     }
-
 }

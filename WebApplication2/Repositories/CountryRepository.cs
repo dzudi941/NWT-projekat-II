@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using WebApplication2.Logger;
 using WebApplication2.Models;
 
-namespace WebApplication2.Repositiories
+namespace WebApplication2.Repositories
 {
-    public class CountryRepository: ICountryRepository, IDisposable
+    public class CountryRepository: IRepository<Country>, IDisposable
     {
         private VideoClubContext _context;
 
@@ -15,22 +14,22 @@ namespace WebApplication2.Repositiories
             _context = context;
         }
 
-        public IEnumerable<Country> GetCountries()
+        public IEnumerable<Country> GetAll()
         {
             return _context.Countries.ToList();
         }
 
-        public Country FindById(int id)
+        public Country Get(int id)
         {
             return _context.Countries.FirstOrDefault(c => c.CountryId == id);
         }
 
-        public void InsertCountry(Country country)
+        public void Insert(Country country)
         {
             _context.Countries.Add(country);
         }
 
-        public Country DeleteCountryById(int id)
+        public Country Delete(int id)
         {
             Country country = _context.Countries.FirstOrDefault(c => c.CountryId == id);
             return _context.Countries.Remove(country);
@@ -58,6 +57,16 @@ namespace WebApplication2.Repositiories
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public IEnumerable<Country> GetWhere(Func<Country, bool> predicate)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Country> FindByIds(IEnumerable<int> ids)
+        {
+            throw new NotImplementedException();
         }
     }
 }

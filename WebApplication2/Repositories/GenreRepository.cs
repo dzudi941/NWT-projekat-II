@@ -4,9 +4,9 @@ using System.Linq;
 using System.Web;
 using WebApplication2.Models;
 
-namespace WebApplication2.Repositiories
+namespace WebApplication2.Repositories
 {
-    public class GenreRepository: IGenreRepository
+    public class GenreRepository: IRepository<Genre>, IDisposable
     {
         private VideoClubContext _context;
 
@@ -15,12 +15,12 @@ namespace WebApplication2.Repositiories
             _context = context;
         }
 
-        public IEnumerable<Genre> GetGenres()
+        public IEnumerable<Genre> GetAll()
         {
             return _context.Genres.ToList();
         }
 
-        public IEnumerable<Genre> GetGenresWhere(Func<Genre, bool> predicate)
+        public IEnumerable<Genre> GetWhere(Func<Genre, bool> predicate)
         {
             return _context.Genres.Where(predicate).ToList();
         }
@@ -30,12 +30,12 @@ namespace WebApplication2.Repositiories
             return _context.Genres.Where(x => ids.Contains(x.GenreId));
         }
 
-        public void InsertGenre(Genre genre)
+        public void Insert(Genre genre)
         {
             _context.Genres.Add(genre);
         }
 
-        public Genre DeleteGenreById(int id)
+        public Genre Delete(int id)
         {
             Genre genre = _context.Genres.FirstOrDefault(g => g.GenreId == id);
             return _context.Genres.Remove(genre);
@@ -63,6 +63,11 @@ namespace WebApplication2.Repositiories
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public Genre Get(int id)
+        {
+            throw new NotImplementedException();
         }
     }
 }

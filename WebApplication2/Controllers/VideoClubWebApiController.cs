@@ -3,7 +3,7 @@ using System.Linq;
 using System.Web.Http;
 using WebApplication2.Models;
 using System.Web.Http.Cors;
-using WebApplication2.Repositiories;
+using WebApplication2.Repositories;
 using WebApplication2.ViewModels;
 
 namespace WebApplication2.Controllers
@@ -11,31 +11,36 @@ namespace WebApplication2.Controllers
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class VideoClubWebApiController : ApiController
     {
-        private IActorRepository _actorRepository;
-        private ICountryRepository _countryRepository;
-        private IGenreRepository _genreRepository;
-        private IMovieRepository _movieRepository;
+        private IRepository<Actor> _actorRepository;
+        private IRepository<Country> _countryRepository;
+        private IRepository<Genre> _genreRepository;
+        private IRepository<Movie> _movieRepository;
 
-        public VideoClubWebApiController()
+
+        public VideoClubWebApiController(
+                IRepository<Actor> actorRepository,
+                IRepository<Country> countryRepository,
+                IRepository<Genre> genreRepository,
+                IRepository<Movie> movieRepository)
         {
-            VideoClubContext videoClubContext = new VideoClubContext();
-            _actorRepository = new ActorRepository(videoClubContext);
-            _countryRepository = new CountryRepository(videoClubContext);
-            _genreRepository = new GenreRepository(videoClubContext);
-            _movieRepository = new MovieRepository(videoClubContext);
+            _actorRepository = actorRepository;
+            _countryRepository = countryRepository;
+            _genreRepository = genreRepository;
+            _movieRepository = movieRepository;
         }
+
 
         #region Movies
         public IEnumerable<MovieViewModel> Get()
         {
-            return _movieRepository.GetMovies().Select(x => new MovieViewModel(x));
+            return _movieRepository.GetAll().Select(x => new MovieViewModel(x));
         }
 
         [HttpGet]
         [Route("api/VideoClubWebApi/GetMovie/{id}")]
         public MovieViewModel GetMovie(int id)
         {
-            Movie movie = _movieRepository.GetMovieById(id);
+            Movie movie = _movieRepository.Get(id);
 
             return new MovieViewModel(movie);
         }
@@ -44,19 +49,19 @@ namespace WebApplication2.Controllers
         [HttpGet]
         public MovieDataViewModel GetMovieData()
         {
-            return new MovieDataViewModel(_countryRepository.GetCountries(), _genreRepository.GetGenres(), _actorRepository.GetActors());
+            return new MovieDataViewModel(_countryRepository.GetAll(), _genreRepository.GetAll(), _actorRepository.GetAll());
         }
 
         [Route("api/VideoClubWebApi/CreateMovie")]
         [HttpPost]
         public IHttpActionResult CreateMovie(MovieViewModel movieViewModel)
         {
-            var country = _countryRepository.FindById(movieViewModel.SelectedCountry);
+            var country = _countryRepository.Get(movieViewModel.SelectedCountry);
             var genres = _genreRepository.FindByIds(movieViewModel.SelectedGenres).ToList();
             var actors = _actorRepository.FindByIds(movieViewModel.SelectedActors).ToList();
 
             Movie movie = new Movie(movieViewModel, country, genres, actors);
-            _movieRepository.InsertMovie(movie);
+            _movieRepository.Insert(movie);
             _movieRepository.Save();
 
             return Ok();
@@ -66,11 +71,11 @@ namespace WebApplication2.Controllers
         [HttpPost]
         public IHttpActionResult EditMovie(MovieViewModel movieViewModel)
         {
-            var country = _countryRepository.FindById(movieViewModel.SelectedCountry);
+            var country = _countryRepository.Get(movieViewModel.SelectedCountry);
             var genres = _genreRepository.FindByIds(movieViewModel.SelectedGenres).ToList();
             var actors = _actorRepository.FindByIds(movieViewModel.SelectedActors).ToList();
 
-            Movie movie = _movieRepository.GetMovieById(movieViewModel.MovieId);
+            Movie movie = _movieRepository.Get(movieViewModel.MovieId);
             movie.CopyFromVM(movieViewModel, country, genres, actors);
             _movieRepository.Save();
 
@@ -81,7 +86,7 @@ namespace WebApplication2.Controllers
         [Route("api/VideoClubWebApi/DeleteMovie/{id}")]
         public IHttpActionResult DeleteMovie(int id)
         {
-            _movieRepository.RemoveMovieById(id);
+            _movieRepository.Delete(id);
             _movieRepository.Save();
 
             return Ok();
@@ -93,14 +98,14 @@ namespace WebApplication2.Controllers
         [HttpGet]
         public IEnumerable<ActorViewModel> GetActors()
         {
-            return _actorRepository.GetActors().Select(x => new ActorViewModel(x));
+            return _actorRepository.GetAll().Select(x => new ActorViewModel(x));
         }
 
         [Route("api/VideoClubWebApi/GetActor/{id}")]
         [HttpGet]
         public ActorViewModel GetActor(int id)
         {
-            Actor actor = _actorRepository.GetActorById(id);
+            Actor actor = _actorRepository.Get(id);
             return new ActorViewModel(actor);
         }
 
@@ -108,10 +113,10 @@ namespace WebApplication2.Controllers
         [HttpPost]
         public IHttpActionResult CreateActor(ActorViewModel actorViewModel)
         {
-            var country = _countryRepository.FindById(actorViewModel.SelectedCountry);
+            var country = _countryRepository.Get(actorViewModel.SelectedCountry);
 
             Actor actor = new Actor(actorViewModel, country);
-            _actorRepository.InsertActor(actor);
+            _actorRepository.Insert(actor);
             _actorRepository.Save();
 
             return Ok();
@@ -121,9 +126,9 @@ namespace WebApplication2.Controllers
         [HttpPost]
         public IHttpActionResult EditActor(ActorViewModel actorViewModel)
         {
-            var country = _countryRepository.FindById(actorViewModel.SelectedCountry);
+            var country = _countryRepository.Get(actorViewModel.SelectedCountry);
 
-            Actor actor = _actorRepository.GetActorById(actorViewModel.ActorId);
+            Actor actor = _actorRepository.Get(actorViewModel.ActorId);
             actor.CopyFromVM(actorViewModel, country);
             _actorRepository.Save();
 
@@ -134,7 +139,7 @@ namespace WebApplication2.Controllers
         [HttpGet]
         public IHttpActionResult DeleteActor(int id)
         {
-            _actorRepository.DeleteActorById(id);
+            _actorRepository.Delete(id);
             _actorRepository.Save();
 
             return Ok();
@@ -146,7 +151,7 @@ namespace WebApplication2.Controllers
         [HttpGet]
         public IEnumerable<GenreViewModel> GetGenres()
         {
-            return _genreRepository.GetGenres().Select(x => new GenreViewModel(x));
+            return _genreRepository.GetAll().Select(x => new GenreViewModel(x));
         }
 
         [Route("api/VideoClubWebApi/CreateGenre")]
@@ -154,7 +159,7 @@ namespace WebApplication2.Controllers
         public IHttpActionResult CreateGenre(GenreViewModel genreViewModel)
         {
             Genre genre = new Genre(genreViewModel);
-            _genreRepository.InsertGenre(genre);
+            _genreRepository.Insert(genre);
             _genreRepository.Save();
 
             return Ok();
@@ -164,7 +169,7 @@ namespace WebApplication2.Controllers
         [HttpGet]
         public IHttpActionResult DeleteGenre(int id)
         {
-            _genreRepository.DeleteGenreById(id);
+            _genreRepository.Delete(id);
             _genreRepository.Save();
 
             return Ok();
@@ -176,7 +181,7 @@ namespace WebApplication2.Controllers
         [HttpGet]
         public IEnumerable<CountryViewModel> GetCountries()
         {
-            return _countryRepository.GetCountries().Select(x => new CountryViewModel(x));
+            return _countryRepository.GetAll().Select(x => new CountryViewModel(x));
         }
 
         [Route("api/VideoClubWebApi/CreateCountry")]
@@ -184,7 +189,7 @@ namespace WebApplication2.Controllers
         public IHttpActionResult CreateCountry(CountryViewModel countryViewModel)
         {
             Country country = new Country(countryViewModel);
-            _countryRepository.InsertCountry(country);
+            _countryRepository.Insert(country);
             _countryRepository.Save();
 
             return Ok(); 
@@ -194,7 +199,7 @@ namespace WebApplication2.Controllers
         [HttpGet]
         public IHttpActionResult DeleteCountry(int id)
         {
-            _countryRepository.DeleteCountryById(id);
+            _countryRepository.Delete(id);
             _countryRepository.Save();
 
             return Ok();

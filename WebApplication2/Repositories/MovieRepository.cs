@@ -4,9 +4,9 @@ using WebApplication2.Models;
 using System.Data.Entity;
 using System;
 
-namespace WebApplication2.Repositiories
+namespace WebApplication2.Repositories
 {
-    public class MovieRepository: IMovieRepository
+    public class MovieRepository: IRepository<Movie>, IDisposable
     {
         private VideoClubContext _context;
 
@@ -15,24 +15,24 @@ namespace WebApplication2.Repositiories
             _context = context;
         }
 
-        public IEnumerable<Movie> GetMovies()
+        public IEnumerable<Movie> GetAll()
         {
             return _context.Movies.Include(m => m.Country).Include(m => m.Genres).Include(m => m.Actors).ToList();
         }
 
-        public Movie GetMovieById(int id)
+        public Movie Get(int id)
         {
             Movie movie = _context.Movies.Include(m => m.Genres).Include(m => m.Actors).Include(m => m.Country).FirstOrDefault(m => m.MovieId == id);
 
             return movie;
         }
 
-        public void InsertMovie(Movie movie)
+        public void Insert(Movie movie)
         {
             _context.Movies.Add(movie);
         }
 
-        public Movie RemoveMovieById(int id)
+        public Movie Delete(int id)
         {
             Movie movie = _context.Movies.FirstOrDefault(m => m.MovieId == id);
             return _context.Movies.Remove(movie);
@@ -75,6 +75,16 @@ namespace WebApplication2.Repositiories
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        public IEnumerable<Movie> GetWhere(Func<Movie, bool> predicate)
+        {
+            return _context.Movies.Include(m => m.Genres).Where(predicate).ToList();
+        }
+
+        public IEnumerable<Movie> FindByIds(IEnumerable<int> ids)
+        {
+            throw new NotImplementedException();
         }
     }
 }
