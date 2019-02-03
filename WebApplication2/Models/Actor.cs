@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
+using WebApplication2.ViewModels;
 
 namespace WebApplication2.Models
 {
@@ -28,6 +29,23 @@ namespace WebApplication2.Models
         public Actor()
         {
             this.Movies = new HashSet<Movie>();
+        }
+
+        public Actor(ActorViewModel actorViewModel, Country country)
+        {
+            ActorId = actorViewModel.ActorId;
+            FullName = actorViewModel.FullName;
+            BirthDate = actorViewModel.BirthDate;
+            Biography = actorViewModel.Biography;
+            Country = country;
+        }
+
+        public void CopyFromVM(ActorViewModel actorViewModel, Country country)
+        {
+            FullName = actorViewModel.FullName;
+            BirthDate = actorViewModel.BirthDate;
+            Biography = actorViewModel.Biography;
+            Country = country;
         }
     }
 }

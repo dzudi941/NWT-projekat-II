@@ -12,6 +12,10 @@ namespace WebApplication2.ViewModels
         public string FullName { get; set; }
         public DateTime BirthDate { get; set; }
         public string Biography { get; set; }
+        public CountryViewModel Country { get; set; }
+        public int SelectedCountry { get; set; }
+
+        public ActorViewModel() { }
 
         public ActorViewModel(Actor actor)
         {
@@ -19,6 +23,8 @@ namespace WebApplication2.ViewModels
             FullName = actor.FullName;
             BirthDate = actor.BirthDate;
             Biography = actor.Biography;
+            Country = new CountryViewModel(actor.Country);
+            SelectedCountry = actor.Country.CountryId;
         }
     }
 }

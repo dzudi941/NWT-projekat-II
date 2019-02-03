@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Web.Mvc;
-using WebApplication2.Logger;
 using WebApplication2.Models;
 using WebApplication2.Repositiories;
 
@@ -17,8 +16,8 @@ namespace WebApplication2.Controllers
         public VideoClubController()
         {
             VideoClubContext videoClubContext = new VideoClubContext();
-            _actorRepository = new ActorRepository(videoClubContext, new FileLogger());
-            _countryRepository = new CountryRepository(videoClubContext, new ConsoleLogger());
+            _actorRepository = new ActorRepository(videoClubContext);
+            _countryRepository = new CountryRepository(videoClubContext);
             _genreRepository = new GenreRepository(videoClubContext);
             _movieRepository = new MovieRepository(videoClubContext);
         }

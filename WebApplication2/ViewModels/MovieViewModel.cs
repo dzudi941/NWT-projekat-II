@@ -17,8 +17,11 @@ namespace WebApplication2.ViewModels
         public int Count { get; set; }
         public IEnumerable<int> SelectedGenres { get; set; }
         public IEnumerable<int> SelectedActors { get; set; }
+        public CountryViewModel Country { get; set; }
+        public IEnumerable<ActorViewModel> Actors { get; set; }
+        public IEnumerable<GenreViewModel> Genres { get; set; }
 
-        public string Genres { get; set; }
+        //public string Genres { get; set; }
 
         public MovieViewModel() { }
 
@@ -35,10 +38,14 @@ namespace WebApplication2.ViewModels
             SelectedGenres = movie.Genres.Select(x => x.GenreId);
             SelectedActors = movie.Actors.Select(x => x.ActorId);
 
-            foreach (var genre in movie.Genres)
-            {
-                Genres += genre.Title + ",";
-            }
+            Country = new CountryViewModel(movie.Country);
+            Actors = movie.Actors.Select(x => new ActorViewModel(x));
+            Genres = movie.Genres.Select(x => new GenreViewModel(x));
+
+            //foreach (var genre in movie.Genres)
+            //{
+            //    Genres += genre.Title + ",";
+            //}
         }
     }
 }

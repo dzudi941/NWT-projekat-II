@@ -11,6 +11,8 @@ namespace WebApplication2.ViewModels
         public int GenreId { get; set; }
         public string Title { get; set; }
 
+        public GenreViewModel() { }
+
         public GenreViewModel(Genre genre)
         {
             GenreId = genre.GenreId;

@@ -9,12 +9,10 @@ namespace WebApplication2.Repositiories
     public class CountryRepository: ICountryRepository, IDisposable
     {
         private VideoClubContext _context;
-        private ILogger _logger;
 
-        public CountryRepository(VideoClubContext context, ILogger logger)
+        public CountryRepository(VideoClubContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         public IEnumerable<Country> GetCountries()
@@ -41,7 +39,6 @@ namespace WebApplication2.Repositiories
         public void Save()
         {
             _context.SaveChanges();
-            _logger.Log(DateTime.Now.ToString() + " - [Country] Save changes to database.");
         }
 
         private bool disposed = false;
