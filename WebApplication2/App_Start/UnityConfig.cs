@@ -17,7 +17,7 @@ namespace WebApplication2
             // it is NOT necessary to register your controllers
 
             // e.g. container.RegisterType<ITestService, TestService>();
-            container.RegisterType<IVideoClubContext, VideoClubContext>();
+            container.RegisterSingleton<IVideoClubContext, VideoClubContext>();
             container.RegisterType<IRepository<Actor>, ActorRepository>();
             container.RegisterType<IRepository<Country>, CountryRepository>();
             container.RegisterType<IRepository<Genre>, GenreRepository>();

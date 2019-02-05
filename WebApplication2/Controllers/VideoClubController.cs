@@ -3,6 +3,7 @@ using System.Linq;
 using System.Web.Mvc;
 using WebApplication2.Models;
 using WebApplication2.Repositories;
+using WebApplication2.ViewModels;
 
 namespace WebApplication2.Controllers
 {
@@ -14,8 +15,8 @@ namespace WebApplication2.Controllers
         private IRepository<Movie> _movieRepository;
 
         public VideoClubController(
-            IRepository<Actor> actorRepository, 
-            IRepository<Country> countryRepository, 
+            IRepository<Actor> actorRepository,
+            IRepository<Country> countryRepository,
             IRepository<Genre> genreRepository,
             IRepository<Movie> movieRepository)
         {
@@ -28,50 +29,52 @@ namespace WebApplication2.Controllers
         // GET: VideoClub
         public ActionResult Index()
         {
-            return View(_movieRepository.GetAll());
+            var movies = _movieRepository.GetAll();
+
+            return View(movies.Select(x => new MovieViewModel(x)));
         }
 
         // GET: VideoClub/Details/5
         public ActionResult Details(int id)
         {
-            return View(_movieRepository.Get(id));
+            var movie = _movieRepository.Get(id);
+
+            return View(new MovieViewModel(movie));
         }
 
         // GET: VideoClub/Create
         public ActionResult Create()
         {
-            VideoClubViewModel videoClubVM = new VideoClubViewModel();
-            videoClubVM.Genres = _genreRepository.GetAll().Select(x=>new SelectListItem { Value = x.GenreId.ToString(), Text = x.Title}).ToList();
-            videoClubVM.Actors = _actorRepository.GetAll().Select(x => new SelectListItem { Value = x.ActorId.ToString(), Text = x.FullName }).ToList();
-            videoClubVM.Countries = _countryRepository.GetAll().Select(c => new SelectListItem { Value = c.CountryId.ToString(), Text = c.Name }).ToList();
+            MovieViewModel movieVM = new MovieViewModel();
+            InitCountriesViewBag();
+            InitActorsViewBag();
+            InitGenresViewBag();
 
-            return View(videoClubVM);    
+            return View(movieVM);
         }
 
         // POST: VideoClub/Create
         [HttpPost]
-        public ActionResult Create(FormCollection collection, VideoClubViewModel movieGenres)
+        public ActionResult Create(MovieViewModel movieViewModel)
         {
             try
             {
-                Movie movie = new Movie();
-                movie.Year = DateTime.Parse(collection["Movie.Year"]);
-                movie.Title = movieGenres.Movie.Title;
-                movie.Director = movieGenres.Movie.Director;
-                movie.Description = movieGenres.Movie.Description;
-                movie.Country = movieGenres.Movie.Country;
-                movie.Count = movieGenres.Movie.Count;
-                movie.Genres = _genreRepository.GetWhere(g => movieGenres.GenreIds.Contains(g.GenreId)).ToList();
-                movie.Actors = _actorRepository.GetWhere(a => movieGenres.ActorIds.Contains(a.ActorId)).ToList();
-                movie.Country = _countryRepository.Get(movieGenres.CountryId);
+                var country = _countryRepository.Get(movieViewModel.SelectedCountry);
+                var genres = _genreRepository.FindByIds(movieViewModel.SelectedGenres).ToList();
+                var actors = _actorRepository.FindByIds(movieViewModel.SelectedActors).ToList();
 
+                Movie movie = new Movie(movieViewModel, country, genres, actors);
                 _movieRepository.Insert(movie);
                 _movieRepository.Save();
 
                 return RedirectToAction("Index");
             }
-            catch
+            catch (Exception e)
             {
+                InitCountriesViewBag();
+                InitActorsViewBag();
+                InitGenresViewBag();
+
                 return View();
             }
         }
@@ -79,34 +82,28 @@ namespace WebApplication2.Controllers
         // GET: VideoClub/Edit/5
         public ActionResult Edit(int id)
         {
-            VideoClubViewModel videoClubVM = new VideoClubViewModel();
-            videoClubVM.Movie = _movieRepository.Get(id);
-            videoClubVM.Genres = _genreRepository.GetAll().Select(x => new SelectListItem { Value = x.GenreId.ToString(), Text = x.Title }).ToList();
-            videoClubVM.GenreIds = videoClubVM.Movie.Genres.Select(g => g.GenreId).ToArray();
-            videoClubVM.Actors = _actorRepository.GetAll().Select(a => new SelectListItem { Value = a.ActorId.ToString(), Text = a.FullName }).ToList();
-            videoClubVM.ActorIds = videoClubVM.Movie.Actors.Select(a => a.ActorId).ToArray();
-            videoClubVM.Countries = _countryRepository.GetAll().Select(c => new SelectListItem { Value = c.CountryId.ToString(), Text = c.Name }).ToList();
-            videoClubVM.CountryId = videoClubVM.Movie.Country.CountryId;
+            var movie = _movieRepository.Get(id);
+            MovieViewModel movieViewModel = new MovieViewModel(movie);
 
-            return View(videoClubVM);
+            InitCountriesViewBag();
+            InitActorsViewBag();
+            InitGenresViewBag();
+
+            return View(movieViewModel);
         }
 
         // POST: VideoClub/Edit/5
         [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection, VideoClubViewModel movieGenres)
+        public ActionResult Edit(int id, MovieViewModel movieViewModel)
         {
             try
             {
-                Movie movie = _movieRepository.Get(id);
-                movie.Year = DateTime.Parse(collection["Movie.Year"]);
-                movie.Title = movieGenres.Movie.Title;
-                movie.Director = movieGenres.Movie.Director;
-                movie.Description = movieGenres.Movie.Description;
-                movie.Country = _countryRepository.Get(movieGenres.CountryId);
-                movie.Count = movieGenres.Movie.Count;
-                movie.Genres = _genreRepository.GetWhere(x => movieGenres.GenreIds.Contains(x.GenreId)).ToList();
-                movie.Actors = _actorRepository.GetWhere(a => movieGenres.ActorIds.Contains(a.ActorId)).ToList();
+                var country = _countryRepository.Get(movieViewModel.SelectedCountry);
+                var genres = _genreRepository.FindByIds(movieViewModel.SelectedGenres).ToList();
+                var actors = _actorRepository.FindByIds(movieViewModel.SelectedActors).ToList();
 
+                Movie movie = _movieRepository.Get(id);
+                movie.CopyFromVM(movieViewModel, country, genres, actors);
                 _movieRepository.Save();
 
                 return RedirectToAction("Index");
@@ -123,12 +120,14 @@ namespace WebApplication2.Controllers
             _movieRepository.Delete(id);
             _movieRepository.Save();
 
-             return RedirectToAction("Index");
+            return RedirectToAction("Index");
         }
 
         public ActionResult Genres()
         {
-            return View(_genreRepository.GetAll());
+            var genres = _genreRepository.GetAll();
+
+            return View(genres.Select(x => new GenreViewModel(x)));
         }
 
         // GET: VideoClub/CreateGenre
@@ -138,12 +137,11 @@ namespace WebApplication2.Controllers
         }
         // POST: VideoClub/CreateGenre
         [HttpPost]
-        public ActionResult CreateGenre(FormCollection collection)
+        public ActionResult CreateGenre(GenreViewModel genreViewModel)
         {
             try
             {
-                Genre genre = new Genre();
-                genre.Title = collection["Title"];
+                Genre genre = new Genre(genreViewModel);
                 _genreRepository.Insert(genre);
                 _genreRepository.Save();
 
@@ -173,35 +171,36 @@ namespace WebApplication2.Controllers
         // GET: VideoClub/Actors
         public ActionResult Actors()
         {
-            return View(_actorRepository.GetAll());
+            var actors = _actorRepository.GetAll();
+
+            return View(actors.Select(x => new ActorViewModel(x)));
         }
 
         // GET: VideoClub/Actors/5
         public ActionResult DetailsActor(int id)
         {
-            return View(_actorRepository.Get(id));
+            Actor actor = _actorRepository.Get(id);
+
+            return View(new ActorViewModel(actor));
         }
 
         // GET: VideoClub/CreateActor
         public ActionResult CreateActor()
         {
-            VideoClubViewModel videoClubVM = new VideoClubViewModel();
-            videoClubVM.Countries = _countryRepository.GetAll().Select(c => new SelectListItem { Value = c.CountryId.ToString(), Text = c.Name }).ToList();
+            InitCountriesViewBag();
 
-            return View(videoClubVM);
+            return View(new ActorViewModel());
         }
 
         // POST: VideoClub/CreateActor
         [HttpPost]
-        public ActionResult CreateActor(VideoClubViewModel movieGenres)
+        public ActionResult CreateActor(ActorViewModel actorViewModel)
         {
             try
             {
-                Actor actor = new Actor();
-                actor.FullName = movieGenres.Actor.FullName;
-                actor.BirthDate = movieGenres.Actor.BirthDate;
-                actor.Biography = movieGenres.Actor.Biography;
-                actor.Country = _countryRepository.Get(movieGenres.CountryId);
+                var country = _countryRepository.Get(actorViewModel.SelectedCountry);
+
+                Actor actor = new Actor(actorViewModel, country);
 
                 _actorRepository.Insert(actor);
                 _actorRepository.Save();
@@ -218,25 +217,22 @@ namespace WebApplication2.Controllers
         public ActionResult EditActor(int id)
         {
             Actor actor = _actorRepository.Get(id);
-            VideoClubViewModel videoClubVM = new VideoClubViewModel();
-            videoClubVM.Actor = actor;
-            videoClubVM.Countries = _countryRepository.GetAll().Select(c => new SelectListItem { Value = c.CountryId.ToString(), Text = c.Name }).ToList();
-            videoClubVM.CountryId = actor.Country.CountryId;
+            ActorViewModel actorViewModel = new ActorViewModel(actor);
+            InitCountriesViewBag();
 
-            return View(videoClubVM);
+            return View(actorViewModel);
         }
 
         // POST: VideoClub/EditActor
         [HttpPost]
-        public ActionResult EditActor(int id, VideoClubViewModel movieGenre)
+        public ActionResult EditActor(int id, ActorViewModel actorViewModel)
         {
             try
             {
+                var country = _countryRepository.Get(actorViewModel.SelectedCountry);
+
                 Actor actor = _actorRepository.Get(id);
-                actor.FullName = movieGenre.Actor.FullName;
-                actor.BirthDate = movieGenre.Actor.BirthDate;
-                actor.Biography = movieGenre.Actor.Biography;
-                actor.Country = _countryRepository.Get(movieGenre.CountryId);
+                actor.CopyFromVM(actorViewModel, country);
 
                 _actorRepository.Save();
 
@@ -258,7 +254,9 @@ namespace WebApplication2.Controllers
 
         public ActionResult Countries()
         {
-            return View(_countryRepository.GetAll());
+            var countries = _countryRepository.GetAll();
+
+            return View(countries.Select(x=> new CountryViewModel(x)));
         }
 
         public ActionResult CreateCountry()
@@ -267,12 +265,11 @@ namespace WebApplication2.Controllers
         }
 
         [HttpPost]
-        public ActionResult CreateCountry(FormCollection collection)
+        public ActionResult CreateCountry(CountryViewModel countryViewModel)
         {
             try
             {
-                Country country = new Country();
-                country.Name = collection["Name"];
+                Country country = new Country(countryViewModel);
                 _countryRepository.Insert(country);
                 _countryRepository.Save();
 
@@ -298,29 +295,57 @@ namespace WebApplication2.Controllers
         }
 
         [HttpPost]
-        public ActionResult Search(FormCollection collection)
+        public ActionResult Search(SearchViewModel searchViewModel)
         {
-            if(collection["search"] != null)
+            if (searchViewModel.CountryName == null && searchViewModel.ActorName == null)
             {
-                var movieName = collection["search"];
-                var foundMovies = _movieRepository.GetWhere(m => m.Title.Contains(movieName));//.FindMoviesThatContainsName(movieName);
+                var movieName = searchViewModel.MovieName;
+                var foundMovies = _movieRepository.GetWhere(m => m.Title.Contains(movieName));
 
-                return View("Index", foundMovies);
+                return View("Index", foundMovies.Select(x => new MovieViewModel(x)));
             }
             else
             {
-                var movieName = collection["Movie.Name"];
-                var moveCountry = collection["Movie.Country"];
-                var movieActor = collection["Movie.Actor"];
-
                 var foundMovies = _movieRepository
-                    .GetWhere(m => m.Title.Contains(movieName)
-                    && m.Country.Name.Contains(moveCountry)
-                    && m.Actors.Any(a => a.FullName.Contains(movieActor))
-                    );//.FindMoviesThatContainsNameActorCountry(movieName, movieActor, moveCountry);
+                    .GetWhere(m => m.Title.Contains(searchViewModel.MovieName)
+                    && m.Country.Name.Contains(searchViewModel.CountryName ?? "")
+                    && m.Actors.Any(a => a.FullName.Contains(searchViewModel.ActorName ?? ""))
+                    );
 
-                return View("Index", foundMovies);
+                return View("Index", foundMovies.Select(x=> new MovieViewModel(x)));
             }
+        }
+
+        private void InitCountriesViewBag()
+        {
+            ViewBag.CountrySelectList = _countryRepository.GetAll()
+                .Select(c => new SelectListItem
+                {
+                    Value = c.CountryId.ToString(), Text = c.Name
+                })
+                .ToList();
+        }
+
+        public void InitActorsViewBag()
+        {
+            ViewBag.ActorsSelectList = _actorRepository.GetAll()
+                .Select(x => new SelectListItem
+                {
+                    Value = x.ActorId.ToString(),
+                    Text = x.FullName
+                })
+                .ToList();
+        }
+
+        public void InitGenresViewBag()
+        {
+            ViewBag.GenresSelectList = _genreRepository.GetAll()
+                .Select(x => new SelectListItem
+                {
+                    Value = x.GenreId.ToString(),
+                    Text = x.Title
+                })
+                .ToList();
         }
     }
 }

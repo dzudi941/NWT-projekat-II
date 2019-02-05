@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
 using WebApplication2.Models;
@@ -9,6 +10,7 @@ namespace WebApplication2.ViewModels
     public class MovieViewModel
     {
         public int MovieId { get; set; }
+        //[DisplayFormat(DataFormatString = "{dd.mm.yyyy}")]
         public DateTime Year { get; set; }
         public string Title { get; set; }
         public string Director { get; set; }

@@ -40,14 +40,7 @@ namespace WebApplication2.Models
 
         public Movie(MovieViewModel movieViewModel, Country country, List<Genre> genres, List<Actor> actors)
         {
-            Year = movieViewModel.Year;
-            Title = movieViewModel.Title;
-            Director = movieViewModel.Director;
-            Description = movieViewModel.Description;
-            Country = country;
-            Actors = actors;
-            Count = movieViewModel.Count;
-            Genres = genres;
+            CopyFromVM(movieViewModel, country, genres, actors);
         }
 
         public void CopyFromVM(MovieViewModel movieViewModel, Country country, List<Genre> genres, List<Actor> actors)

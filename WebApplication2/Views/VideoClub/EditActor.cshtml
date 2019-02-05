@@ -1,4 +1,4 @@
-﻿@model WebApplication2.Models.VideoClubViewModel
+﻿@model WebApplication2.ViewModels.ActorViewModel
 
 @{
     ViewBag.Title = "EditActor";
@@ -15,37 +15,37 @@
         <h4>Actor</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.Actor.ActorId)
+        @Html.HiddenFor(model => model.ActorId)
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Actor.FullName, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.FullName, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Actor.FullName, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Actor.FullName, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.FullName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.FullName, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Actor.BirthDate, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.BirthDate, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Actor.BirthDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Actor.BirthDate, "", new { @class = "text-danger" })
+                @Html.EditorFor(model => model.BirthDate, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.BirthDate, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Actor.Biography, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Biography, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.TextAreaFor(model => model.Actor.Biography, new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.Actor.Biography, "", new { @class = "text-danger" })
+                @Html.TextAreaFor(model => model.Biography, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Biography, "", new { @class = "text-danger" })
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.Actor.Country, htmlAttributes: new { @class = "control-label col-md-2" })
+            @Html.LabelFor(model => model.Country, htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
-                @Html.DropDownListFor(model => model.CountryId, Model.Countries, new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.Actor.Country, "", new { @class = "text-danger" })
+                @Html.DropDownListFor(model => model.SelectedCountry, (IEnumerable<SelectListItem>)ViewBag.CountrySelectList, new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Country, "", new { @class = "text-danger" })
             </div>
         </div>
 

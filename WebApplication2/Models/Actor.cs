@@ -34,10 +34,7 @@ namespace WebApplication2.Models
         public Actor(ActorViewModel actorViewModel, Country country)
         {
             ActorId = actorViewModel.ActorId;
-            FullName = actorViewModel.FullName;
-            BirthDate = actorViewModel.BirthDate;
-            Biography = actorViewModel.Biography;
-            Country = country;
+            CopyFromVM(actorViewModel, country);
         }
 
         public void CopyFromVM(ActorViewModel actorViewModel, Country country)
